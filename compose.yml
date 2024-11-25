@@ -1,0 +1,11 @@
+services:
+  user-api:
+    image: oven/bun
+    container_name: user-api
+    command: ["bun", "dev"]
+    env_file: .env
+    ports:
+      - 3001:3001
+    working_dir: /app
+    volumes:
+      - ./users-api:/app
