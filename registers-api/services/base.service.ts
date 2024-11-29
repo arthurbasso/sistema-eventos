@@ -19,6 +19,11 @@ export abstract class BaseService<T> {
     return query.get(id) as T
   }
 
+  async getByUserId(userId: number): Promise<T | null> {
+    const query = this.db.prepare(`SELECT * FROM ${this.tableName} WHERE user_id = ?`);
+    return query.all(userId) as T;
+  }
+
   async create(data: Partial<T>): Promise<number | bigint> {
     const keys = Object.keys(data)
     const placeholders = keys.map(() => '?').join(', ')
