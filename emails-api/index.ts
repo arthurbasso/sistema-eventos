@@ -15,31 +15,31 @@ const transporter = nodemailer.createTransport({
 });
 
 app.post("/emails", async (req: Request, res: Response): Promise<void> => {
-    const { to, subject, text } = req.body;
-  
-    if (!to || !subject || !text ) {
-      res.status(400).json({
-        error: "Por favor, forneça 'to', 'subject', e 'text'.",
-      });
-      return;
-    }
-  
-    try {
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to,
-        subject,
-        text,
-      };
-  
-      await transporter.sendMail(mailOptions);
-      res.status(200).json({ message: "E-mail enviado com sucesso!" });
-    } catch (error) {
-      console.error("Erro ao enviar e-mail:", error);
-      res.status(500).json({ error: "Erro ao enviar e-mail." });
-    }
-});  
+  const { to, subject, text } = req.body;
 
-app.listen(process.env.EMAILS_API_PORT, () => {
-  console.log(`Emails API rodando na porta ${process.env.EMAILS_API_PORT}`);
+  if (!to || !subject || !text) {
+    res.status(400).json({
+      error: "Por favor, forneça 'to', 'subject', e 'text'.",
+    });
+    return;
+  }
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "E-mail enviado com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao enviar e-mail:", error);
+    res.status(500).json({ error: "Erro ao enviar e-mail." });
+  }
+});
+
+app.listen(3004, () => {
+  console.log(`Emails API rodando na porta 3004`);
 });
