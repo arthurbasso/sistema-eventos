@@ -50,7 +50,7 @@ export class UserController {
     try {
       const userWithDefaults = {
         ...user,
-        synchronized: user.synchronized ?? true,
+        synchronized: user.synchronized ?? false,
       };
   
       let newUser: number | bigint = await this.service.create(userWithDefaults);

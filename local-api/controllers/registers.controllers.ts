@@ -63,7 +63,7 @@ export class RegisterController {
   
       const registerWithDefaults = {
         ...register,
-        synchronized: register.synchronized ?? true,
+        synchronized: register.synchronized ?? false,
       };
   
       const newRegisterId: number | bigint = await this.service.create(registerWithDefaults);
