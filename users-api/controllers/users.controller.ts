@@ -46,26 +46,24 @@ export class UserController {
 
   async createUser(user: User) {
     delete user.id;
-  
+
     try {
       const userWithDefaults = {
-        ...user,
-        synchronized: user.synchronized ?? true,
+        ...user
       };
-  
+
       let newUser: number | bigint = await this.service.create(userWithDefaults);
-  
+
       if (!newUser) {
         throw new Error(UserError.NotCreated);
       }
-  
+
       return { id: newUser, ...userWithDefaults };
     } catch (e) {
       console.error(e);
       throw new Error(UserError.NotCreated);
     }
   }
-  
 
   async updateUser(id: number, user: User) {
     delete user.id
@@ -80,6 +78,7 @@ export class UserController {
       return updatedUser
     } catch (e) {
       console.error(e)
+      throw new Error(UserError.NotUpdated)
     }
   }
 
@@ -92,6 +91,47 @@ export class UserController {
       }
 
       return deletedUser
+    } catch (e) {
+      console.error(e)
+      throw new Error(UserError.NotDeleted)
+    }
+  }
+
+  async changePassword(id: number, password: string, newPassword: string) {
+    try {
+      let userPassword: User = await this.service.getUserPassword(id)
+      let isPasswordValid: boolean = userPassword.password ? await Bun.password.verify(password, userPassword.password) : true
+
+      if (isPasswordValid) {
+        let updatedPassword = await this.service.changePassword(id, newPassword)
+
+        if (!updatedPassword) {
+          throw new Error(UserError.NotUpdated)
+        }
+
+        return updatedPassword
+      } else {
+        throw new Error(UserError.NotMatch)
+      }
+    } catch (e: any) {
+      console.error(e)
+      if (e.message === UserError.NotMatch) {
+        throw new Error(UserError.NotMatch)
+      } else {
+        throw new Error(UserError.NotUpdated)
+      }
+    }
+  }
+
+  async login(email: string, password: string) {
+    try {
+      let token = await this.service.login(email, password)
+
+      if (!token) {
+        throw new Error(UserError.NotLoggedIn)
+      }
+
+      return token
     } catch (e) {
       console.error(e)
     }

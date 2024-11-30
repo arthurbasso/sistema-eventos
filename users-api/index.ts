@@ -1,9 +1,10 @@
 import express from 'express'
 import fs from 'fs'
-import type {Request, Response} from 'express'
+import type { Request, Response } from 'express'
 import morgan from 'morgan'
 
 import userRoutes from './routes/users.routes'
+import sessionRoutes from './routes/session.routes'
 
 const app = express()
 
@@ -15,9 +16,10 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.use(['/user', '/users'], userRoutes)
+app.use(['/session', '/sessions'], sessionRoutes)
 
-app.listen(process.env.USER_API_PORT, () => {
-  console.log(`User API listening on port ${process.env.USER_API_PORT}`)
+app.listen(3001, () => {
+  console.log(`User API listening on port ${3001}`)
 })
 
 

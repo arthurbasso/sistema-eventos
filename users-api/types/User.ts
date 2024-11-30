@@ -3,5 +3,5 @@ export type User = {
   name: string;
   email: string;
   password?: string;
-  synchronized: boolean;
+  synchronized?: boolean;
 };
