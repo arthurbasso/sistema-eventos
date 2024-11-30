@@ -1,11 +1,32 @@
 services:
-  user-api:
-    image: oven/bun
-    container_name: user-api
+  users-api:
+    image: oven/bun:alpine
+    container_name: users-api
     command: ["bun", "dev"]
     env_file: .env
     ports:
       - 3001:3001
-    working_dir: /app
+    working_dir: /var/www/html
     volumes:
-      - ./users-api:/app
+      - ./users-api:/var/www/html
+    networks:
+      - default
+
+  events-api:
+    image: php:8.3-fpm-alpine
+    container_name: events-api
+    build: .
+    command: ["php", "-S", "0.0.0.0:3002", "-t", "/var/www/html/public"]
+    env_file: .env
+    ports:
+      - 3002:3002
+    working_dir: /var/www/html
+    volumes:
+      - ./events-api:/var/www/html
+    networks:
+      - default
+
+networks:
+  default:
+    name: network-sistema
+    driver: bridge

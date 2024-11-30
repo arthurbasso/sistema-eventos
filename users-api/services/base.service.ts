@@ -5,7 +5,7 @@ export abstract class BaseService<T> {
   protected tableName: string
 
   constructor(tableName: string) {
-    this.db = new Database('../database.db')
+    this.db = new Database('database.db')
     this.tableName = tableName
   }
 
