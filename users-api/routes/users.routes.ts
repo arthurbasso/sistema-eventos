@@ -52,9 +52,11 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
-router.patch('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   let userId: number = parseInt(req.params.id)
   let user: User = req.body
+
+  delete user.id
 
   try {
     await controller.updateUser(userId, user)
