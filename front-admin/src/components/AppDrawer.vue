@@ -52,6 +52,7 @@ export default {
         to="/portal/events"
       />
       <v-list-item
+        v-if="!isAdmin"
         prepend-icon="mdi-seat"
         title="Meus Eventos"
         to="/portal/myevents"

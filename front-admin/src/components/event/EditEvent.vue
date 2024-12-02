@@ -23,7 +23,9 @@ export default {
     loadingEvent: false,
     event: {
       name: '',
-      email: ''
+      description: '',
+      date: null,
+      participants: 0
     }
   }),
 
@@ -45,9 +47,14 @@ export default {
   watch: {
     modelValue(value) {
       if (value) {
+        let date = new Date()
+        date = date.toISOString()
+
         this.event = {
           name: '',
-          email: ''
+          description: '',
+          date,
+          participants: 0
         }
         if (this.isEditing) this.fetchEvent()
       }

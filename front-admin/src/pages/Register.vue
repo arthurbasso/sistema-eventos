@@ -73,9 +73,15 @@ export default {
                 />
               </v-card-text>
               <v-card-actions>
+                <v-btn
+                  @click="$router.push('/login')"
+                >
+                  Já possuo cadastro
+                </v-btn>
                 <v-spacer />
                 <v-btn
                   type="submit"
+                  variant="tonal"
                   color="primary"
                   :loading
                 >

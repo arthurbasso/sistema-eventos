@@ -3,6 +3,7 @@ import eventsApi from '@/api/events.api';
 import dayjs from 'dayjs';
 
 import { useUserStore } from '@/stores/user.store';
+import { useAppStore } from '@/stores/app.store';
 import { mapState } from 'pinia';
 import usersApi from '@/api/users.api';
 
@@ -24,6 +25,7 @@ export default {
   emits: ['update:modelValue'],
 
   data: () => ({
+    search: '',
     eventDetails: {},
     participants: [],
     users: [],
@@ -43,6 +45,7 @@ export default {
   }),
 
   computed: {
+    ...mapState(useAppStore, ['isOffline']),
     ...mapState(useUserStore, ['isAdmin']),
     value: {
       get() {
@@ -59,13 +62,14 @@ export default {
       if (value) {
         this.participants = []
         this.fetchEvent()
-        this.getParticipants()
+        if (this.isAdmin) this.getParticipants()
       }
     },
 
-    dialogAddParticipant(value) {
+    async dialogAddParticipant(value) {
       if (value) {
-        this.users = usersApi.getUsers()
+        let users = await usersApi.getUsers()
+        this.users = users.data
       } else {
         this.participant = []
         this.getParticipants()
@@ -93,6 +97,7 @@ export default {
 
     async getParticipants() {
       this.loadingParticipants = true
+      this.participants = []
       try {
         let response = await eventsApi.getRegistrationsByEventId(this.event.id)
         let users = await usersApi.getUsers()
@@ -111,16 +116,18 @@ export default {
       }
     },
 
-    async editEvent() {
-      this.dialog = true
-    },
+    async addParticipant() {
+      try {
+        await eventsApi.createRegistration({
+          event_id: this.event.id,
+          user_id: this.participantToAdd.id
+        })
 
-    async deleteEvent() {
-      this.dialog = true
-    },
-
-    async subscribeEvent() {
-      this.dialog = true
+        this.dialogAddParticipant = false
+        this.getParticipants()
+      } catch (error) {
+        console.error(error)
+      }
     },
 
     async checkinUser(register) {
@@ -134,7 +141,17 @@ export default {
         register.loading = false
       }
     },
-  },
+
+    async finishEvent() {
+      try {
+        await eventsApi.finishEvent(this.event.id)
+        this.fetchEvent()
+        this.getParticipants()
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  }
 }
 </script>
 
@@ -158,29 +175,54 @@ export default {
               Limite de inscrições: {{ eventDetails.participants }}
             </v-card-subtitle>
           </v-col>
-          <v-col class="text-end">
+          <v-col
+            v-if="isAdmin"
+            class="text-right"
+          >
             <v-btn
+              prepend-icon="mdi-account-plus"
               variant="tonal"
               @click="dialogAddParticipant = true"
             >
               Adicionar participante
             </v-btn>
+
+            <v-btn
+              :disabled="isOffline"
+              prepend-icon="mdi-check"
+              class="mt-2"
+              variant="tonal"
+              @click="finishEvent"
+            >
+              Finalizar evento
+            </v-btn>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row
+          v-if="isAdmin"
+        >
           <span class="text-overline pa-0">Participantes</span>
           <v-data-table-virtual
-            v-if="isAdmin"
             :loading="loadingParticipants"
             :headers="headers"
             :items="participants"
             item-key="id"
           >
+            <template #item.user.name="{ item }">
+              {{ item?.user?.name }}
+              <v-chip
+                v-if="item.offline"
+                class="ml-2 rounded"
+                size="x-small"
+                text="Offline"
+              />
+            </template>
+
             <template #item.actions="{item}">
               <v-tooltip text="Confirmar Check-in">
                 <template #activator="{ props }">
                   <v-btn
-                    :disabled="item.status === 'checked-in'"
+                    :disabled="item.status !== 'registered'"
                     :loading="item.loading"
                     v-bind="props"
                     icon="mdi-login"
@@ -199,7 +241,10 @@ export default {
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="dialogAddParticipant">
+  <v-dialog
+    v-model="dialogAddParticipant"
+    max-width="500"
+  >
     <v-card>
       <v-card-title>
         Adicionar participante
@@ -207,11 +252,13 @@ export default {
       <v-card-text>
         <v-row>
           <v-col>
-            <v-select
+            <v-autocomplete
               v-model="participantToAdd"
-              :items="users"
-              item-text="name"
+              :search="search"
+              :items="users.filter(user => !user.is_admin )"
+              item-title="name"
               item-value="id"
+              return-object
               label="Participante"
             />
           </v-col>

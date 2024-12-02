@@ -12,14 +12,8 @@ export default {
   data: () => ({
     loading: false,
     loadingMyEvents: false,
-    dialogEditEvent: false,
-    dialogDeleteEvent: false,
-    dialogSubscribeEvent: false,
     dialogEventDetails: false,
     events: [],
-    eventEdit: 0,
-    eventDelete: {},
-    eventSubscribe: {},
     eventDetails: {},
     headers: [
       { title: 'ID', value: 'id' },
@@ -34,26 +28,6 @@ export default {
   computed: {
     ...mapState(useAppStore, ['isOffline']),
     ...mapState(useUserStore, ['isAdmin', 'getUserId']),
-  },
-
-  watch: {
-    dialogEditEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
-    },
-
-    dialogDeleteEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
-    },
-
-    dialogSubscribeEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
-    }
   },
 
   async created() {
@@ -82,21 +56,6 @@ export default {
         this.loading = false
         this.loadingMyEvents = false
       }
-    },
-
-    openEditEvent(event) {
-      this.eventEdit = event.id
-      this.dialogEditEvent = true
-    },
-
-    openDeleteEvent(event) {
-      this.eventDelete = event
-      this.dialogDeleteEvent = true
-    },
-
-    openSubscribeEvent(event) {
-      this.eventSubscribe = event
-      this.dialogSubscribeEvent = true
     },
 
     openEventDetails(event, row) {
@@ -195,21 +154,6 @@ export default {
       </v-main>
     </v-layout>
   </v-app>
-
-  <edit-event
-    v-model="dialogEditEvent"
-    :event-id="eventEdit"
-  />
-
-  <delete-event
-    v-model="dialogDeleteEvent"
-    :event="eventDelete"
-  />
-
-  <subscribe-event
-    v-model="dialogSubscribeEvent"
-    :event="eventSubscribe"
-  />
 
   <event-details
     v-model="dialogEventDetails"

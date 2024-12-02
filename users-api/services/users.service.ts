@@ -26,7 +26,11 @@ export class UserService extends BaseService<User> {
     const query = this.db.prepare(`SELECT * FROM users WHERE email = ?`)
     const user = query.get(email) as User
 
-    if (user && await Bun.password.verify(password, user.password ?? '')) {
+    if (user) {
+      if (user.password && !await Bun.password.verify(password, user.password)) {
+        return null
+      }
+
       const sessionService = new SessionService()
       return sessionService.createSession(user ?? {})
     }

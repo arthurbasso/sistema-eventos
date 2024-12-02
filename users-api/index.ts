@@ -21,7 +21,7 @@ app.use(['/user', '/users'], userRoutes)
 app.use(['/session', '/sessions'], sessionRoutes)
 
 app.listen(3001, () => {
-  console.log(`User API listening on port ${3001}`)
+  console.log(`User API listening on port 3001`)
 })
 
 

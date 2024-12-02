@@ -101,8 +101,8 @@ export default {
       this.dialogSubscribeEvent = true
     },
 
-    openEventDetails(event, row) {
-      this.eventDetails = row.item
+    openEventDetails(item) {
+      this.eventDetails = item
       this.dialogEventDetails = true
     },
 
@@ -166,9 +166,24 @@ export default {
                 :headers="headers"
                 :items="events"
                 item-key="id"
-                @click:row="openEventDetails"
               >
                 <template #item.actions="{ item }">
+                  <v-tooltip
+                    text="Detalhes"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        icon="mdi-information-outline"
+                        class="mr-2"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="openEventDetails(item)"
+                      />
+                    </template>
+                  </v-tooltip>
                   <v-tooltip
                     v-if="isAdmin"
                     text="Editar"
@@ -196,7 +211,7 @@ export default {
                   >
                     <template #activator="{ props }">
                       <v-btn
-                        v-if="!isOffline || item.offline"
+                        v-if="!isOffline"
                         v-bind="props"
                         color="red"
                         icon="mdi-delete"
