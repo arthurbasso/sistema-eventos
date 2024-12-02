@@ -18,6 +18,6 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use(['/certificate', '/certificates'], certificateRoutes)
 
-app.listen(process.env.CERTIFICATE_API_PORT, () => {
-  console.log(`Certificate API listening on port ${process.env.CERTIFICATE_API_PORT}`)
+app.listen(3005, () => {
+  console.log(`Certificate API listening on port 3005`)
 })

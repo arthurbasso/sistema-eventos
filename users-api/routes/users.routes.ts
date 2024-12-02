@@ -40,7 +40,14 @@ router.post('/', async (req: Request, res: Response) => {
   let user: User = req.body
 
   try {
+    var user_password = user?.password
+    delete user.password
+
     let newUser: User | unknown = await controller.createUser(user)
+
+    if (user_password) {
+      await controller.changePassword(newUser.id, '', user_password)
+    }
 
     res.status(201).send(newUser)
   } catch (e: any) {
@@ -57,6 +64,7 @@ router.put('/:id', async (req: Request, res: Response) => {
   let user: User = req.body
 
   delete user.id
+  delete user.offline
 
   try {
     await controller.updateUser(userId, user)

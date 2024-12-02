@@ -3,5 +3,6 @@ export type User = {
   name: string;
   email: string;
   password?: string;
-  synchronized?: boolean;
+  offline?: boolean;
+  is_admin?: boolean;
 };

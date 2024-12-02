@@ -1,6 +1,8 @@
 <?php
 
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Headers: Content-Type');
 
 use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
@@ -22,29 +24,12 @@ $container->set(EventController::class, function (ContainerInterface $container)
 
 $app = AppFactory::create();
 
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
-
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-});
-
-$app->options('/{routes:.+}', function ($request, $response) {
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-});
-
-$app->addErrorMiddleware(true, true, true);
-
 $app->get('/events', [EventController::class, 'getAll']);
 $app->get('/events/{id}', [EventController::class, 'getById']);
 $app->post('/events', [EventController::class, 'create']);
 $app->put('/events/{id}', [EventController::class, 'update']);
 $app->delete('/events/{id}', [EventController::class, 'delete']);
+$app->post('/events/{id}/finish', [EventController::class, 'finishEvent']);
 
 $app->get('/registrations', [EventController::class, 'getAllRegistrations']);
 $app->get('/registrations/{id}', [EventController::class, 'getRegistrationById']);

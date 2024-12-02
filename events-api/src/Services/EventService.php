@@ -34,10 +34,12 @@ class EventService
             throw new \Exception('Missing required fields');
         }
 
-        $stmt = $this->db->prepare('INSERT INTO events (name, description, date) VALUES (:name, :description, :date)');
+        $stmt = $this->db->prepare('INSERT INTO events (name, description, date, participants, cert_template_id) VALUES (:name, :description, :date, :participants, :cert_template_id)');
         $stmt->bindValue(':name', $data['name']);
         $stmt->bindValue(':description', $data['description']);
         $stmt->bindValue(':date', $data['date']);
+        $stmt->bindValue(':participants', $data['participants']);
+        $stmt->bindValue(':cert_template_id', $data['cert_template_id']);
         $stmt->execute();
 
         return ['id' => $this->db->lastInsertRowID(), ...$data];
@@ -45,11 +47,13 @@ class EventService
 
     public function update($id, $data)
     {
-        $statement = $this->db->prepare("UPDATE events SET name = :name, description = :description, date = :date WHERE id = :id");
-        
+        $statement = $this->db->prepare("UPDATE events SET name = :name, description = :description, date = :date, participants = :participants, cert_template_id = :cert_template_id WHERE id = :id");
+
         $statement->bindValue(':name', $data['name'], SQLITE3_TEXT);
         $statement->bindValue(':description', $data['description'], SQLITE3_TEXT);
         $statement->bindValue(':date', $data['date'], SQLITE3_TEXT);
+        $statement->bindValue(':participants', $data['participants'], SQLITE3_NUM);
+        $statement->bindValue(':cert_template_id', $data['cert_template_id'], SQLITE3_INTEGER);
         $statement->bindValue(':id', $id, SQLITE3_INTEGER);
 
         $result = $statement->execute();
@@ -93,7 +97,7 @@ class EventService
 
     public function getRegistrationsByUserId($id): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM event_users WHERE user_id = :id');
+        $stmt = $this->db->prepare('SELECT events.*, event_users.status FROM event_users JOIN events ON event_users.event_id = events.id WHERE event_users.user_id = :id');
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         $registrations = [];
@@ -121,8 +125,18 @@ class EventService
             throw new \Exception('Missing required fields');
         }
 
+        $checkStmt = $this->db->prepare('SELECT COUNT(*) as count FROM event_users WHERE event_id = :event_id AND user_id = :user_id');
+        $checkStmt->bindValue(':event_id', $data['event_id'], SQLITE3_INTEGER);
+        $checkStmt->bindValue(':user_id', $data['user_id'], SQLITE3_INTEGER);
+        $result = $checkStmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+        if ($result['count'] > 0) {
+            throw new \Exception('User is already registered for this event');
+        }
+
         $stmt = $this->db->prepare('INSERT INTO event_users (event_id, user_id, status) VALUES (:event_id, :user_id, :status)');
         $stmt->bindValue(':event_id', $data['event_id']);
+
         $stmt->bindValue(':user_id', $data['user_id']);
         $stmt->bindValue(':status', $data['status']);
         $stmt->execute();
@@ -156,4 +170,11 @@ class EventService
         return $this->db->changes() > 0;
     }
 
+    public function finishEvent($id): bool
+    {
+        $stmt = $this->db->prepare("UPDATE event_users SET status = 'canceled' WHERE event_id = :id AND status = 'registered';");
+        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmt->execute();
+        return $this->db->changes() > 0;
+    }
 }

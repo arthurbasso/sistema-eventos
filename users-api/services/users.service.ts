@@ -28,7 +28,7 @@ export class UserService extends BaseService<User> {
 
     if (user && await Bun.password.verify(password, user.password ?? '')) {
       const sessionService = new SessionService()
-      return sessionService.createSession(user.id ?? 0)
+      return sessionService.createSession(user ?? {})
     }
 
     return null

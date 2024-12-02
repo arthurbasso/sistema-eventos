@@ -26,6 +26,32 @@ services:
     networks:
       - default
 
+  emails-api:
+    image: oven/bun:alpine
+    container_name: emails-api
+    command: ["bun", "run", "index.ts"]
+    env_file: .env
+    ports:
+      - 3004:3004
+    working_dir: /var/www/html
+    volumes:
+      - ./emails-api:/var/www/html
+    networks:
+      - default
+  
+  certificates-api:
+    image: oven/bun:alpine
+    container_name: certificates-api
+    command: ["bun", "run", "index.ts"]
+    env_file: .env
+    ports:
+      - 3005:3005
+    working_dir: /var/www/html
+    volumes:
+      - ./certificates-api:/var/www/html
+    networks:
+      - default
+
 networks:
   default:
     name: network-sistema

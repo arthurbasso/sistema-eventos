@@ -1,4 +1,5 @@
 import type { Session } from "../types/Session";
+import type { User } from "../types/User";
 import { BaseService } from "./base.service";
 import jwt from 'jsonwebtoken'
 
@@ -12,13 +13,18 @@ export class SessionService extends BaseService<Session> {
         return query.get(token) as Session
     }
 
-    async createSession(userId: number): Promise<string> {
-        const token = jwt.sign({ userId }, 'secret', { expiresIn: '1h' })
+    async createSession(user: User): Promise<string> {
+        var is_admin = user?.is_admin ? true : false
+        var user_id = user?.id ?? 0
+
+        console.log('is_admin', is_admin)
+
+        const token = jwt.sign({ user_id, is_admin }, 'secret', { expiresIn: '1h' })
         const currentTimestamp = new Date().toISOString()
         const expiration = new Date(new Date().getTime() + 60 * 60 * 1000).toISOString()
 
         const query = this.db.prepare(`INSERT INTO sessions (user_id, token, date, expiration) VALUES (?, ?, ?, ?)`)
-        query.run(userId, token, currentTimestamp, expiration)
+        query.run(user_id, token, currentTimestamp, expiration)
 
         return token
     }

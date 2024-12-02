@@ -3,6 +3,8 @@ import { UserError } from "../enums/UserError"
 
 import type { User } from "../types/User"
 
+import { sendEmail } from "../mail/mailer"
+
 export class UserController {
   protected service: UserService
 
@@ -45,17 +47,32 @@ export class UserController {
   }
 
   async createUser(user: User) {
-    delete user.id;
+    delete user.id
+    delete user.offline
 
     try {
       const userWithDefaults = {
         ...user
-      };
+      }
+
+      if (user.password) userWithDefaults.password = await Bun.password.hash(user.password)
 
       let newUser: number | bigint = await this.service.create(userWithDefaults);
 
       if (!newUser) {
         throw new Error(UserError.NotCreated);
+      }
+
+      try {
+        var text = ''
+        if (user.password) {
+          text = 'Your registration is complete!'
+        } else {
+          text = `Please finish your registration by clicking the link <a href="http://localhost:5173/finish/${user.email}">here</a>.`
+        }
+        await sendEmail(user.email, 'Welcome to Eventovates!', text);
+      } catch (e) {
+        console.error('Error sending email:', e);
       }
 
       return { id: newUser, ...userWithDefaults };
@@ -108,6 +125,8 @@ export class UserController {
         if (!updatedPassword) {
           throw new Error(UserError.NotUpdated)
         }
+
+        sendEmail(userPassword.email, 'Password changed', 'Your password has been changed successfully')
 
         return updatedPassword
       } else {

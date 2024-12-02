@@ -19,6 +19,8 @@ const transporter = nodemailer.createTransport({
 app.post("/emails", async (req: Request, res: Response): Promise<void> => {
   const { to, subject, text } = req.body;
 
+  var html = text
+
   if (!to || !subject || !text) {
     res.status(400).json({
       error: "Por favor, forneça 'to', 'subject', e 'text'.",
@@ -31,7 +33,7 @@ app.post("/emails", async (req: Request, res: Response): Promise<void> => {
       from: process.env.EMAIL_USER,
       to,
       subject,
-      text,
+      html,
     };
 
     await transporter.sendMail(mailOptions);
