@@ -1,25 +1,21 @@
 <script>
-import usersApi from '@/api/users.api';
+import eventsApi from '@/api/events.api';
 
 export default {
-  name: 'DeleteUser',
+  name: 'DeleteEvent',
 
   props: {
     modelValue: {
       type: Boolean,
       default: false
     },
-    user: {
+    event: {
       type: Object,
       default: () => ({})
     },
   },
 
   emits: ['update:modelValue'],
-
-  data: () => ({
-    loading: false,
-  }),
 
   computed: {
     value: {
@@ -30,21 +26,18 @@ export default {
         this.$emit('update:modelValue', value)
       }
     },
-    userDelete() {
-      return this.user
+    eventDelete() {
+      return this.event
     }
   },
 
   methods: {
-    async deleteUser() {
+    async deleteEvent() {
       try {
-        this.loading = true
-        await usersApi.deleteUser(this.userDelete.id)
+        await eventsApi.deleteEvent(this.eventDelete.id)
         this.value = false
       } catch (error) {
         console.error(error)
-      } finally {
-        this.loading = false
       }
     }
   }
@@ -58,17 +51,16 @@ export default {
   >
     <v-card>
       <v-card-title>
-        <span class="headline">Deletar Usuário</span>
+        <span class="headline">Deletar Evento</span>
       </v-card-title>
       <v-card-text>
-        Tem certeza que deseja deletar o usuário {{ userDelete.name }}?
+        Tem certeza que deseja deletar o evento {{ eventDelete.name }}?
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn
           color="blue darken-1"
           text
-          :loading
           @click="value = false"
         >
           Cancelar
@@ -76,8 +68,7 @@ export default {
         <v-btn
           color="blue darken-1"
           text
-          :loading
-          @click="deleteUser"
+          @click="deleteEvent"
         >
           Deletar
         </v-btn>

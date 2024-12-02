@@ -1,8 +1,8 @@
 <script>
-import usersApi from '@/api/users.api';
+import eventsApi from '@/api/events.api';
 
 export default {
-  name: 'UserEdit',
+  name: 'EventEdit',
 
   props: {
     modelValue: {
@@ -10,7 +10,7 @@ export default {
       default: false
     },
 
-    userId: {
+    eventId: {
       type: Number,
       default: 0
     }
@@ -20,8 +20,8 @@ export default {
 
   data: () => ({
     loading: false,
-    loadingUser: false,
-    user: {
+    loadingEvent: false,
+    event: {
       name: '',
       email: ''
     }
@@ -38,40 +38,39 @@ export default {
     },
 
     isEditing() {
-      return this.userId > 0
+      return this.eventId > 0
     }
   },
 
   watch: {
     modelValue(value) {
       if (value) {
-        this.user = {
+        this.event = {
           name: '',
           email: ''
         }
-        if (this.isEditing) this.fetchUser()
+        if (this.isEditing) this.fetchEvent()
       }
     }
   },
 
   methods: {
-    async fetchUser() {
+    async fetchEvent() {
       try {
-        this.loadingUser = true
-        let user = await usersApi.getUser(this.userId)
-        this.user = user.data
-        delete this.user.id
+        this.loadingEvent = true
+        let event = await eventsApi.getEvent(this.eventId)
+        this.event = event.data
       } catch (error) {
         console.error(error)
       } finally {
-        this.loadingUser = false
+        this.loadingEvent = false
       }
     },
 
-    async createUser() {
+    async createEvent() {
       try {
         this.loading = true
-        await usersApi.createUser(this.user)
+        await eventsApi.createEvent(this.event)
         this.value = false
       } catch (error) {
         console.error(error)
@@ -80,10 +79,10 @@ export default {
       }
     },
 
-    async editUser() {
+    async editEvent() {
       try {
         this.loading = true
-        await usersApi.updateUser(this.userId, this.user)
+        await eventsApi.updateEvent(this.eventId, this.event)
         this.value = false
       } catch (error) {
         console.error(error)
@@ -92,11 +91,11 @@ export default {
       }
     },
 
-    saveUser() {
+    saveEvent() {
       if (this.isEditing) {
-        this.editUser()
+        this.editEvent()
       } else {
-        this.createUser()
+        this.createEvent()
       }
     }
   }
@@ -107,30 +106,45 @@ export default {
   <v-dialog
     v-model="value"
     max-width="500"
-    @after-leave="userEdit = {}"
+    @after-leave="eventEdit = {}"
   >
     <v-card>
       <v-card-title>
-        <span class="headline">Editar usuário</span>
+        <span class="headline">Editar evento</span>
       </v-card-title>
-      <v-form @submit.prevent="saveUser">
+      <v-form @submit.prevent="saveEvent">
         <v-card-text>
           <v-text-field
-            v-model="user.name"
-            :disabled="loadingUser"
+            v-model="event.name"
+            :disabled="loadingEvent"
             label="Nome"
           />
 
+          <v-textarea
+            v-model="event.description"
+            :disabled="loadingEvent"
+            label="Descrição"
+          />
+
           <v-text-field
-            v-model="user.email"
-            :disabled="loadingUser"
-            label="Email"
+            v-model="event.date"
+            type="datetime-local"
+            :disabled="loadingEvent"
+            label="Data"
+          />
+
+          <v-text-field
+            v-model="event.participants"
+            type="number"
+            :disabled="loadingEvent"
+            label="Limite de participantes"
+            clearable
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
-            :disabled="loadingUser"
+            :disabled="loadingEvent"
             type="submit"
             color="primary"
             :loading

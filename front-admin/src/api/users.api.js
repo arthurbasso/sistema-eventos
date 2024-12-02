@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAppStore } from "@/stores/app.store";
 
 const api = axios.create({
   baseURL: "http://localhost:3001",
@@ -7,11 +8,9 @@ const api = axios.create({
   }
 })
 
-import { useAppStore } from "@/stores/app.store";
-const appStore = useAppStore();
-
 class UsersApi {
   async getUsers() {
+    const appStore = useAppStore()
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("users") || '[]') };
     } else {
@@ -20,6 +19,7 @@ class UsersApi {
   }
 
   async getUser(id) {
+    const appStore = useAppStore()
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("users") || '[]').find(user => user.id === id) || {} };
     } else {
@@ -28,6 +28,7 @@ class UsersApi {
   }
 
   async createUser(user) {
+    const appStore = useAppStore()
     if (appStore.isOffline) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
 
@@ -38,9 +39,9 @@ class UsersApi {
       localStorage.setItem("users", JSON.stringify(users));
 
       return { data: user };
+    } else {
+      return api.post("/users", user);
     }
-
-    return api.post("/users", user);
   }
 
   async updateUser(id, user) {
@@ -48,16 +49,9 @@ class UsersApi {
   }
 
   async deleteUser(id) {
+    const appStore = useAppStore()
     if (appStore.isOffline) {
       var users = JSON.parse(localStorage.getItem("users") || "[]");
-
-      users = users.map(user => {
-        if (user.id === id) {
-          user.offline = true
-        }
-
-        return user
-      })
 
       const newUsers = users.filter(user => user.id !== id);
       localStorage.setItem("users", JSON.stringify(newUsers));

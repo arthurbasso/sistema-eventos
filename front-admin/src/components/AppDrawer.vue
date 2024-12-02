@@ -2,7 +2,14 @@
 import { useAppStore } from '@/stores/app.store'
 import { mapState, mapActions } from 'pinia';
 
+
+
 export default {
+  data: () => ({
+    loadingOfflineMode: false,
+    dialogOfflineMode: false,
+  }),
+
   computed: {
     ...mapState(useAppStore, ['isOffline']),
   },
@@ -10,15 +17,28 @@ export default {
   methods: {
     ...mapActions(useAppStore, ['setOfflineMode']),
 
-    login() {
-      this.$router.push('/admin')
+    logout() {
+      localStorage.removeItem('token')
+      this.$router.push('/login')
+    },
+
+    async changeOfflineMode() {
+      this.loadingOfflineMode = true
+      try {
+        await this.setOfflineMode(!this.isOffline)
+        this.dialogOfflineMode = false
+      } catch (error) {
+        console.error(error)
+      } finally {
+        this.loadingOfflineMode = false
+      }
     }
   }
 }
 </script>
 
 <template>
-  <v-navigation-drawer>
+  <v-navigation-drawer permanent>
     <v-list
       density="compact"
       nav
@@ -54,7 +74,7 @@ export default {
           title="Modo offline"
           :base-color="isOffline ? 'primary' : ''"
           variant="tonal"
-          @click="setOfflineMode(!isOffline)"
+          @click="dialogOfflineMode = true"
         />
 
         <v-list-item
@@ -68,20 +88,34 @@ export default {
     </template>
   </v-navigation-drawer>
 
-  <v-dialog>
+  <v-dialog
+    v-model="dialogOfflineMode"
+    max-width="600"
+  >
     <v-card>
       <v-card-title>
-        {{ isOffline ? 'Habilitar' : 'Desabilitar' }} modo offline
+        {{ isOffline ? 'Desabilitar' : 'Habilitar' }} modo offline
       </v-card-title>
+
       <v-card-text>
         <p>
           O modo offline permite que você continue utilizando o sistema mesmo sem conexão com a internet.
         </p>
-
+        <br>
         <p>
           <strong>Atenção:</strong> as alterações realizadas no modo offline só serão sincronizadas com o servidor quando o modo offline for desabilitado.
         </p>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          color="primary"
+          :loading="loadingOfflineMode"
+          @click="changeOfflineMode"
+        >
+          {{ isOffline ? 'Desabilitar' : 'Habilitar' }}
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>

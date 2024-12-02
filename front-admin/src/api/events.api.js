@@ -1,32 +1,66 @@
 import axios from "axios";
+import { useAppStore } from "@/stores/app.store";
 
 const api = axios.create({
   baseURL: "http://localhost:3002",
   headers: {
-    // Overwrite Axios's automatically set Content-Type
     'Content-Type': 'application/json'
   }
 });
 
 class EventsApi {
   async getEvents() {
-    return api.get("/events");
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("events") || '[]') };
+    } else {
+      return api.get("/events");
+    }
   }
 
   async getEvent(eventId) {
-    return api.get(`/events/${eventId}`);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("events") || '[]').find(event => event.id === eventId) || {} };
+    } else {
+      return api.get(`/events/${eventId}`);
+    }
   }
 
   async createEvent(event) {
-    return api.post("/events", event);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      const events = JSON.parse(localStorage.getItem("events") || "[]");
+
+      event.id = events[events.length - 1]?.id + 1
+      event.offline = true
+
+      events.push(event);
+      localStorage.setItem("events", JSON.stringify(events));
+
+      return { data: event };
+    } else {
+      return api.post("/events", event);
+    }
   }
 
-  async updateEvent(event) {
-    return api.put(`/events/${event.id}`, event);
+  async updateEvent(id, event) {
+    return api.put(`/events/${id}`, event);
   }
 
   async deleteEvent(eventId) {
-    return api.delete(`/events/${eventId}`);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      var events = JSON.parse(localStorage.getItem("events") || "[]");
+
+      events = events.map(event => event.id !== eventId)
+
+      localStorage.setItem("events", JSON.stringify(events));
+
+      return { data: {} };
+    } else {
+      return api.delete(`/events/${eventId}`);
+    }
   }
 
 
