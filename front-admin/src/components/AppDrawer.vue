@@ -29,6 +29,11 @@ export default {
         to="/events"
       />
       <v-list-item
+        prepend-icon="mdi-seat"
+        title="Eventos"
+        to="/userEvents"
+      />
+      <v-list-item
         prepend-icon="mdi-account-multiple"
         title="Usuários"
         to="/users"

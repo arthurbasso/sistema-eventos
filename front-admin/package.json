@@ -13,6 +13,7 @@
     "@mdi/font": "7.4.47",
     "axios": "^1.7.8",
     "dayjs": "^1.11.13",
+    "jspdf": "^2.5.2",
     "pinia": "^2.2.8",
     "roboto-fontface": "*",
     "vue": "^3.4.31",
