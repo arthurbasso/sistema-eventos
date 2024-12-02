@@ -19,8 +19,6 @@ export default {
   data: () => ({
     dayjs,
     loading: false,
-    dialogEditEvent: false,
-    dialogDeleteEvent: false,
     dialogSubscribeEvent: false,
     dialogGenerateCertificate: false,
     certificateEvent: {},
@@ -41,20 +39,6 @@ export default {
   computed: {
     ...mapState(useAppStore, ['isOffline']),
     ...mapState(useUserStore, ['isAdmin', 'getUserId']),
-  },
-
-  watch: {
-    dialogEditEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
-    },
-
-    dialogDeleteEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
-    }
   },
 
   async created() {
@@ -159,16 +143,6 @@ export default {
       <app-drawer />
       <v-main>
         <v-container>
-          <v-row v-if="isAdmin">
-            <v-col>
-              <v-btn
-                prepend-icon="mdi-plus"
-                text="Novo evento"
-                elevation="0"
-                @click="openEditEvent({ id: 0 })"
-              />
-            </v-col>
-          </v-row>
           <v-row>
             <v-col>
               <v-data-table-virtual
@@ -212,6 +186,7 @@ export default {
                   >
                     <template #activator="{ props }">
                       <v-btn
+                        :disabled="item.status !== 'checked-in'"
                         v-bind="props"
                         class="mr-2"
                         color="primary"
@@ -223,21 +198,24 @@ export default {
                       />
                     </template>
                   </v-tooltip>
-                  <v-tooltip text="Cancelar Inscrição" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      class="mr-2"
-                      color="red"
-                      icon="mdi-close-circle"
-                      variant="tonal"
-                      size="x-small"
-                      rounded
-                      v-if="item.status === 'registered'"
-                      @click="cancelRegistration(item)"
-                    />
-                  </template>
-                </v-tooltip>
+                  <v-tooltip
+                    text="Cancelar Inscrição"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-if="item.status === 'registered'"
+                        v-bind="props"
+                        class="mr-2"
+                        color="red"
+                        icon="mdi-close-circle"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="cancelRegistration(item)"
+                      />
+                    </template>
+                  </v-tooltip>
                 </template>
               </v-data-table-virtual>
             </v-col>
@@ -246,17 +224,6 @@ export default {
       </v-main>
     </v-layout>
   </v-app>
-
-  <edit-event
-    v-model="dialogEditEvent"
-    :event-id="eventEdit"
-  />
-
-  <delete-event
-    v-model="dialogDeleteEvent"
-    :event="eventDelete"
-  />
-
   <subscribe-event
     v-model="dialogSubscribeEvent"
     :event="eventSubscribe"
@@ -265,7 +232,6 @@ export default {
   <GenerateCertificate
     v-model="dialogGenerateCertificate"
     :event="certificateEvent"
-    :userId="getUserId"
+    :user-id="getUserId"
   />
-
 </template>

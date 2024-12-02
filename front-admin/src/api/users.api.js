@@ -14,7 +14,7 @@ class UsersApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("users") || '[]') };
     } else {
-      return api.get("/users");
+      return await api.get("/users");
     }
   }
 
@@ -23,7 +23,7 @@ class UsersApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("users") || '[]').find(user => user.id === id) || {} };
     } else {
-      return api.get(`/users/${id}`);
+      return await api.get(`/users/${id}`);
     }
   }
 
@@ -40,12 +40,12 @@ class UsersApi {
 
       return { data: user };
     } else {
-      return api.post("/users", user);
+      return await api.post("/users", user);
     }
   }
 
   async updateUser(id, user) {
-    return api.put(`/users/${id}`, user);
+    return await api.put(`/users/${id}`, user);
   }
 
   async deleteUser(id) {
@@ -58,20 +58,28 @@ class UsersApi {
 
       return { data: {} }
     } else {
-      return api.delete(`/users/${id}`);
+      return await api.delete(`/users/${id}`);
     }
   }
 
   async changePassword(id, password, new_password) {
-    return api.put(`/users/${id}/change-password`, { password, new_password });
+    return await api.put(`/users/${id}/change-password`, { password, new_password });
   }
 
   async login(email, password) {
-    return api.post("/users/login", { email, password });
+    let data = { email }
+    if (password) {
+      data.password = password
+    }
+    return await api.post("/users/login", data);
   }
 
   async register(user) {
-    return api.post("/users", user);
+    return await api.post("/users", user);
+  }
+
+  setToken(token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
   }
 }
 

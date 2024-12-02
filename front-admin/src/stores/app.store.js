@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { changeOfflineMode } from "@/api/offline";
+import { enableOfflineMode, disableOfflineMode } from "@/api/offline";
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -18,8 +18,13 @@ export const useAppStore = defineStore('app', {
     },
 
     async setOfflineMode(offlineMode) {
-      localStorage.setItem('offlineMode', offlineMode)
-      await changeOfflineMode(offlineMode)
+      if (offlineMode) {
+        await enableOfflineMode(offlineMode)
+        this.offlineMode = true
+      } else {
+        this.offlineMode = false
+        await disableOfflineMode(offlineMode)
+      }
     }
   }
 })

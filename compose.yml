@@ -2,7 +2,7 @@ services:
   users-api:
     image: oven/bun:alpine
     container_name: users-api
-    command: ["bun", "dev"]
+    command: ["bun", "run", "--hot", "index.ts"]
     env_file: .env
     ports:
       - 3001:3001
@@ -29,7 +29,7 @@ services:
   emails-api:
     image: oven/bun:alpine
     container_name: emails-api
-    command: ["bun", "run", "index.ts"]
+    command: ["bun", "run", "--hot", "index.ts"]
     env_file: .env
     ports:
       - 3004:3004
@@ -42,13 +42,26 @@ services:
   certificates-api:
     image: oven/bun:alpine
     container_name: certificates-api
-    command: ["bun", "run", "index.ts"]
+    command: ["bun", "run", "--hot", "index.ts"]
     env_file: .env
     ports:
       - 3005:3005
     working_dir: /var/www/html
     volumes:
       - ./certificates-api:/var/www/html
+    networks:
+      - default
+
+  app-gateway:
+    image: oven/bun:alpine
+    container_name: app-gateway
+    command: ["bun", "run", "--hot", "index.ts"]
+    env_file: .env
+    ports:
+      - 3000:3000
+    working_dir: /var/www/html
+    volumes:
+      - ./app-gateway:/var/www/html
     networks:
       - default
 

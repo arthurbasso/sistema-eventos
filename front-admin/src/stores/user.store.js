@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import usersApi from "@/api/users.api";
+import eventsApi from "@/api/events.api";
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -32,11 +34,15 @@ export const useUserStore = defineStore('user', {
       let token = localStorage.getItem('token')
 
       this.token = token
+      usersApi.setToken(token)
+      eventsApi.setToken(token)
     },
 
     setToken(token) {
       localStorage.setItem('token', token)
       this.token = token
+      usersApi.setToken(token)
+      eventsApi.setToken(token)
     },
 
     doLogout() {

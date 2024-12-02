@@ -1,22 +1,9 @@
-import axios from "axios";
-
-const apiUsers = axios.create({
-  baseURL: "http://localhost:3001",
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-
-const apiEvents = axios.create({
-  baseURL: "http://localhost:3002",
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
+import apiUsers from "./users.api";
+import apiEvents from "./events.api";
 
 async function downloadUsers() {
+  let users = await apiUsers.getUsers()
   localStorage.removeItem("users")
-  let users = await apiUsers.get("/users")
   localStorage.setItem("users", JSON.stringify(users.data))
 }
 
@@ -26,13 +13,13 @@ async function uploadUsers() {
 
   users = users.filter(user => user.offline)
 
-  await users.forEach(async user => {
-    let newUser = await apiUsers.post("/users", user)
+  await users.map(async user => {
+    let newUser = await apiUsers.createUser(user)
 
     if (participants.some(participant => participant.userId === user.id)) {
       participants = participants.map(participant => {
-        if (participant.offline && participant.userId === user.id) {
-          participant.userId = newUser.data.id
+        if (participant.offline && participant.user_id === user.id) {
+          participant.user_id = newUser.data.id
         }
         return participant
       })
@@ -40,21 +27,20 @@ async function uploadUsers() {
       localStorage.setItem("participants", JSON.stringify(participants))
     }
 
-    user = newUser.data
+    return newUser.data
   })
 
   localStorage.setItem("users", JSON.stringify(users))
+  await uploadParticipants()
 }
 
 async function downloadEvents() {
-  let events = await apiEvents.get("/events")
+  let events = await apiEvents.getEvents()
   localStorage.setItem("events", JSON.stringify(events.data))
 }
 
-async function uploadEvents() { }
-
 async function downloadParticipants() {
-  let participants = await apiEvents.get("/registrations")
+  let participants = await apiEvents.getRegistrations()
   localStorage.setItem("participants", JSON.stringify(participants.data))
 }
 
@@ -62,26 +48,35 @@ async function uploadParticipants() {
   let participants = JSON.parse(localStorage.getItem("participants") || "[]")
   participants = participants.filter(participant => participant.offline)
 
-  await participants.forEach(async participant => {
-    let newParticipant = await apiEvents.post("/participants", participant)
-    participant = newParticipant.data
+  await participants.map(async participant => {
+    delete participant.offline
+    let newParticipant = await apiEvents.createRegistration(participant)
+
+    return newParticipant.data
   })
 
   localStorage.setItem("participants", JSON.stringify(participants))
 }
 
-export const changeOfflineMode = async (offlineMode) => {
-  if (offlineMode) {
-    await downloadUsers()
-    await downloadEvents()
-    await downloadParticipants()
-  } else {
-    await doUpload()
-  }
+export const enableOfflineMode = async () => {
 
+  await downloadUsers()
+  await downloadEvents()
+  await downloadParticipants()
+
+  localStorage.setItem("offlineMode", true)
   window.location.reload()
 }
 
-const doUpload = async () => {
+export const disableOfflineMode = async () => {
   await uploadUsers()
+
+  localStorage.removeItem("offlineMode")
+  localStorage.removeItem("users")
+  localStorage.removeItem("events")
+  localStorage.removeItem("participants")
+
+  // setTimeout(() => {
+  //   window.location.reload()
+  // }, 2000);
 }

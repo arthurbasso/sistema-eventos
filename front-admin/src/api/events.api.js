@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAppStore } from "@/stores/app.store";
 
 const api = axios.create({
-  baseURL: "http://localhost:3002",
+  baseURL: "http://localhost:3000",
   headers: {
     'Content-Type': 'application/json'
   }
@@ -14,7 +14,7 @@ class EventsApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("events") || '[]') };
     } else {
-      return api.get("/events");
+      return await api.get("/events");
     }
   }
 
@@ -23,7 +23,7 @@ class EventsApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("events") || '[]').find(event => event.id === eventId) || {} };
     } else {
-      return api.get(`/events/${eventId}`);
+      return await api.get(`/events/${eventId}`);
     }
   }
 
@@ -40,12 +40,12 @@ class EventsApi {
 
       return { data: event };
     } else {
-      return api.post("/events", event);
+      return await api.post("/events", event);
     }
   }
 
   async updateEvent(id, event) {
-    return api.put(`/events/${id}`, event);
+    return await api.put(`/events/${id}`, event);
   }
 
   async deleteEvent(eventId) {
@@ -59,7 +59,7 @@ class EventsApi {
 
       return { data: {} };
     } else {
-      return api.delete(`/events/${eventId}`);
+      return await api.delete(`/events/${eventId}`);
     }
   }
 
@@ -69,7 +69,7 @@ class EventsApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("participants") || '[]') };
     } else {
-      return api.get("/registrations");
+      return await api.get("/registrations");
     }
   }
 
@@ -78,12 +78,17 @@ class EventsApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("participants") || '[]').find(participant => participant.id === registrationId) || {} };
     } else {
-      return api.get(`/registrations/${registrationId}`);
+      return await api.get(`/registrations/${registrationId}`);
     }
   }
 
   async getRegistrationsByUserId(userId) {
-    return api.get(`/registrations/user/${userId}`);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("participants") || '[]').filter(participant => participant.user_id === userId) || [] };
+    } else {
+      return await api.get(`/registrations/user/${userId}`);
+    }
   }
 
   async getRegistrationsByEventId(eventId) {
@@ -91,7 +96,7 @@ class EventsApi {
     if (appStore.isOffline) {
       return { data: JSON.parse(localStorage.getItem("participants") || '[]').filter(participant => participant.event_id === eventId) || [] };
     } else {
-      return api.get(`/registrations/event/${eventId}`);
+      return await api.get(`/registrations/event/${eventId}`);
     }
   }
 
@@ -101,6 +106,7 @@ class EventsApi {
       const participants = JSON.parse(localStorage.getItem("participants") || "[]");
 
       registration.id = participants[participants.length - 1]?.id + 1
+      registration.status = "checked-in"
       registration.offline = true
 
       participants.push(registration);
@@ -108,22 +114,46 @@ class EventsApi {
 
       return { data: registration };
     } else {
-      return api.post("/registrations", registration);
+      return await api.post("/registrations", registration);
     }
   }
 
   async deleteRegistration(registrationId) {
-    return api.delete(`/registrations/${registrationId}`);
+    return await api.delete(`/registrations/${registrationId}`);
   }
 
   async registerPresence(registrationId, user_id) {
-    return api.put(`/checkin/${registrationId}`, { user_id });
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      var participants = JSON.parse(localStorage.getItem("participants") || "[]");
+
+      participants = participants.map(participant => {
+        if (participant.id === registrationId) {
+          participant.status = "checked-in"
+        }
+
+        return participant
+      })
+
+      localStorage.setItem("participants", JSON.stringify(participants));
+
+      return { data: {} };
+    } else {
+      return await api.put(`/checkin/${registrationId}`, { user_id });
+    }
   }
 
   async cancelRegistration(registrationId, user_id) {
-    return api.put(`/cancel/${registrationId}`, { user_id });
+    return await api.put(`/cancel/${registrationId}`, { user_id });
   }
 
+  async finishEvent(eventId) {
+    return await api.post(`/events/${eventId}/finish`);
+  }
+
+  setToken(token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  }
 }
 
 export default new EventsApi();
