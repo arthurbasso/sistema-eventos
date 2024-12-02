@@ -1,6 +1,8 @@
 <script>
 import emailsApi from '@/api/emails.api';
 import eventsApi from '@/api/events.api';
+import certificatesApi from '@/api/certificates.api';
+import GenerateCertificate from '@/components/certificate/GenerateCertificate.vue';
 
 import { useAppStore } from '@/stores/app.store';
 import { useUserStore } from '@/stores/user.store';
@@ -10,12 +12,18 @@ import { mapState } from 'pinia';
 export default {
   name: 'MyEvents',
 
+  components: {
+    GenerateCertificate,
+  },
+
   data: () => ({
     dayjs,
     loading: false,
     dialogEditEvent: false,
     dialogDeleteEvent: false,
     dialogSubscribeEvent: false,
+    dialogGenerateCertificate: false,
+    certificateEvent: {},
     events: [],
     eventEdit: 0,
     eventDelete: {},
@@ -66,6 +74,25 @@ export default {
       }
     },
 
+    async cancelRegistration(event) {
+      try {
+        this.loading = true;
+        await eventsApi.cancelRegistration(event.registration_id, this.getUserId);
+
+        const eventIndex = this.events.findIndex(item => item.id === event.id);
+        if (eventIndex !== -1) {
+          this.events[eventIndex].status = 'canceled';
+        }
+
+        alert('Inscrição cancelada com sucesso!');
+      } catch (error) {
+        console.error('Erro ao cancelar inscrição:', error);
+        alert('Erro ao tentar cancelar, tente novamente!');
+      } finally {
+        this.loading = false;
+      }
+    },
+
     openEditEvent(event) {
       this.eventEdit = event.id
       this.dialogEditEvent = true
@@ -112,6 +139,15 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    openGenerateCertificate(event) {
+      if (event.status !== 'checked-in') {
+        alert('Você precisa ter comparecido ao evento para gerar o certificado.');
+        return;
+      }
+      this.certificateEvent = event;
+      this.dialogGenerateCertificate = true;
     },
   }
 }
@@ -183,10 +219,25 @@ export default {
                         variant="tonal"
                         size="x-small"
                         rounded
-                        @click="downloadCertificate"
+                        @click="openGenerateCertificate(item)"
                       />
                     </template>
                   </v-tooltip>
+                  <v-tooltip text="Cancelar Inscrição" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      class="mr-2"
+                      color="red"
+                      icon="mdi-close-circle"
+                      variant="tonal"
+                      size="x-small"
+                      rounded
+                      v-if="item.status === 'registered'"
+                      @click="cancelRegistration(item)"
+                    />
+                  </template>
+                </v-tooltip>
                 </template>
               </v-data-table-virtual>
             </v-col>
@@ -210,4 +261,11 @@ export default {
     v-model="dialogSubscribeEvent"
     :event="eventSubscribe"
   />
+
+  <GenerateCertificate
+    v-model="dialogGenerateCertificate"
+    :event="certificateEvent"
+    :userId="getUserId"
+  />
+
 </template>

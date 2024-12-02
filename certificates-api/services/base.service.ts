@@ -18,6 +18,20 @@ export abstract class BaseService<T> {
     const query = this.db.prepare(`SELECT * FROM ${this.tableName} WHERE id = ?`)
     return query.get(id) as T
   }
+  
+  async getCertificateByUserIdAndEventId(user_id: number, event_id: number): Promise<T | null> {
+    const query = this.db.prepare(`SELECT * FROM ${this.tableName} WHERE user_id = ? AND event_id = ?`)
+    const result = query.get(user_id, event_id)
+    
+    return result as T | null
+  }
+
+  async getCertificateByAuthToken(authToken: string): Promise<T | null> {
+    const query = this.db.prepare(`SELECT * FROM ${this.tableName} WHERE auth_token = ?`)
+    const result = query.get(authToken)
+    
+    return result ? (result as T) : null
+  }
 
   async create(data: Partial<T>): Promise<number | bigint> {
     const keys = Object.keys(data)

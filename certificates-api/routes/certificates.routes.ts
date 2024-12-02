@@ -23,6 +23,42 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.status(200).send(certificate)
 })
 
+router.post('/validate/:token', async (req: Request, res: Response) => {
+  const { token } = req.params
+
+  try {
+    let certificate = await controller.validateCertificate(token)
+
+    if (!certificate) {
+      res.status(404).send('Certificate not found')
+    } else {
+      res.status(200).send({ message: 'Certificate is valid', certificate })
+    }
+  } catch (e) {
+    console.error(e)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
+
+router.get('/user/:user_id/event/:event_id', async (req: Request, res: Response) => {
+  const userId: number = parseInt(req.params.user_id)
+  const eventId: number = parseInt(req.params.event_id)
+
+  try {
+    let certificate: Certificate | unknown = await controller.getCertificateByUserIdAndEventId(userId, eventId)
+
+    if (!certificate) {
+      res.status(404).send('Certificate not found for the provided user_id and event_id')
+    } else {
+      res.status(200).send(certificate)
+    }
+  } catch (e) {
+    console.error(e)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
 router.post('/', async (req: Request, res: Response) => {
   let certificate: Certificate = req.body
 
