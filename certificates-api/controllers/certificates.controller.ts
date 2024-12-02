@@ -1,5 +1,6 @@
 import { CertificateService } from "../services/certificates.service"
 import { CertificateError } from "../enums/CertificateError"
+import { v4 as uuidv4 } from 'uuid';
 
 import type { Certificate } from "../types/Certificate"
 
@@ -24,6 +25,21 @@ export class CertificateController {
     }
   }
 
+  async validateCertificate(token: string) {
+    try {
+      let certificate: Certificate | null = await this.service.getCertificateByAuthToken(token)
+
+      if (!certificate) {
+        throw new Error('Certificate not found for the provided token')
+      }
+
+      return certificate
+    } catch (e) {
+      console.error(e)
+      throw new Error('Invalid certificate token')
+    }
+  }
+
   async getCertificateById(id: number) {
     try {
       let certificate: Certificate | any = await this.service.getById(id)
@@ -39,13 +55,29 @@ export class CertificateController {
     }
   }
 
+  async getCertificateByUserIdAndEventId(user_id: number, event_id: number) {
+    try {
+      let certificate: Certificate | null = await this.service.getCertificateByUserIdAndEventId(user_id, event_id)
+
+      if (!certificate) {
+        throw new Error('Certificate not found for the provided user_id and event_id')
+      }
+      return certificate
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   async createCertificate(certificate: Certificate) {
     try {
+
+      const authToken = uuidv4();
+
       const certificateWithDefaults = {
         user_id: certificate.user_id,
         event_id: certificate.event_id,
         date: certificate.date,
-        auth_token: certificate.auth_token,
+        auth_token: authToken,
       };
   
       let newCertificate: number | bigint = await this.service.create(certificateWithDefaults);

@@ -120,8 +120,8 @@ class EventsApi {
     return api.put(`/checkin/${registrationId}`, { user_id });
   }
 
-  async cancelRegistration(registrationId) {
-    return api.put(`/cancel/${registrationId}`);
+  async cancelRegistration(registrationId, user_id) {
+    return api.put(`/cancel/${registrationId}`, { user_id });
   }
 
 }

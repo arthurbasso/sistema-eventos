@@ -46,7 +46,7 @@ export default {
     >
       <v-row>
         <v-col>
-          <v-card title="Faça login">
+          <v-card title="Registre-se">
             <v-form
               ref="formRegister"
               @submit.prevent="login"
@@ -79,7 +79,7 @@ export default {
                   color="primary"
                   :loading
                 >
-                  Login
+                  Registrar-se
                 </v-btn>
               </v-card-actions>
             </v-form>

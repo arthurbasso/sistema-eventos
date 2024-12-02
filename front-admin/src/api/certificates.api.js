@@ -29,6 +29,14 @@ class CertificatesApi {
     return api.delete(`/certificates/${certificateId}`);
   }
 
+  async getCertificateByUserIdAndEventId(userId, eventId) {
+    const response = await api.get(`/certificates/user/${userId}/event/${eventId}`);
+    return response;
+  }
+
+  async validateCertificate(token) {
+    return api.post(`/certificates/validate/${token}`)
+  }
 }
 
 export default new CertificatesApi();

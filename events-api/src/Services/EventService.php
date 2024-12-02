@@ -97,7 +97,15 @@ class EventService
 
     public function getRegistrationsByUserId($id): array
     {
-        $stmt = $this->db->prepare('SELECT events.*, event_users.status FROM event_users JOIN events ON event_users.event_id = events.id WHERE event_users.user_id = :id');
+        $stmt = $this->db->prepare('
+            SELECT 
+                event_users.id AS registration_id, 
+                events.*, 
+                event_users.status 
+            FROM event_users 
+            JOIN events ON event_users.event_id = events.id 
+            WHERE event_users.user_id = :id
+        ');
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         $registrations = [];
