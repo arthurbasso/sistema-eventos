@@ -2,34 +2,46 @@ import { defineStore } from "pinia";
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    user: null,
-    token: null,
+    token: null
   }),
 
   getters: {
     isLoggedIn() {
-      return !!this.user
+      return !!this.token
+    },
+
+    getTokenPayload() {
+      if (this.token) {
+        return JSON.parse(atob(this.token.split('.')[1]))
+      } else {
+        return null
+      }
+    },
+
+    getUserId() {
+      return this.getTokenPayload?.user_id || null
     },
 
     isAdmin() {
-      return this.user?.role === 'admin'
+      return this.getTokenPayload?.is_admin === true
     }
   },
 
   actions: {
     fetch() {
-      let user = localStorage.getItem('user')
       let token = localStorage.getItem('token')
 
-      this.user = user
       this.token = token
-    },
-    setUser(user) {
-      this.user = user
     },
 
     setToken(token) {
+      localStorage.setItem('token', token)
       this.token = token
+    },
+
+    doLogout() {
+      localStorage.removeItem('token')
+      this.token = null
     }
   }
 })

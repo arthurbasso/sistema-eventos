@@ -20,23 +20,19 @@ router.onError((err, to) => {
   }
 })
 
-// router.beforeEach((to, from, next) => {
-//   const token = localStorage.getItem('token')
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
 
-//   if (to.path === '/') {
-//     if (!token) {
-//       next('/login')
-//     } else {
-//       if (to.meta.requiresAuth) {
-//         next()
-//       } else {
-//         next('/dashboard')
-//       }
-//     }
-//   } else {
-//     next()
-//   }
-// })
+  if (token && to.path === '/login') {
+    return next('/portal/events')
+  }
+
+  if (!token && to.path.startsWith('/portal')) {
+    return next('/login')
+  } else {
+    return next()
+  }
+})
 
 router.isReady().then(() => {
   localStorage.removeItem('vuetify:dynamic-reload')

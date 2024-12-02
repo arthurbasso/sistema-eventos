@@ -1,28 +1,39 @@
 <script>
 import usersApi from '@/api/users.api';
+import { useUserStore } from '@/stores/user.store';
+import { mapActions } from 'pinia';
 
 export default {
-  name: 'Login',
-
-  data: () => ({
-    loading: false,
-    email: '',
-    password: ''
-  }),
+    data: () => ({
+      loading: false,
+      name: '',
+      email: '',
+      password: '',
+    }),
 
   methods: {
+    ...mapActions(useUserStore, ['setToken']),
+
     async login() {
-      const { valid } = await this.$refs.formLogin.validate()
+      const { valid } = await this.$refs.formRegister.validate()
       if (valid) try {
-        let response = await usersApi.login(this.email, this.password)
-        localStorage.setItem('token', response.data)
+        this.loading = true
+
+        await usersApi.register({
+          name: this.name,
+          email: this.email,
+          password: this.password,
+        })
+
+        this.$router.push('/login')
 
         this.$router.push('/portal/events')
-
       } catch (error) {
         console.error(error)
+      } finally {
+        this.loading = false
       }
-    },
+    }
   }
 }
 </script>
@@ -37,10 +48,16 @@ export default {
         <v-col>
           <v-card title="Faça login">
             <v-form
-              ref="formLogin"
+              ref="formRegister"
               @submit.prevent="login"
             >
               <v-card-text class="pb-0">
+                <v-text-field
+                  v-model="name"
+                  :disabled="loading"
+                  label="Nome"
+                  :rules="[v => !!v || 'Campo obrigatório']"
+                />
                 <v-text-field
                   v-model="email"
                   :disabled="loading"
@@ -52,6 +69,7 @@ export default {
                   :disabled="loading"
                   type="password"
                   label="Senha"
+                  :rules="[v => !!v || 'Campo obrigatório']"
                 />
               </v-card-text>
               <v-card-actions>

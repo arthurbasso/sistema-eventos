@@ -69,6 +69,10 @@ class UsersApi {
   async login(email, password) {
     return api.post("/users/login", { email, password });
   }
+
+  async register(user) {
+    return api.post("/users", user);
+  }
 }
 
 export default new UsersApi();

@@ -1,10 +1,5 @@
-/**
- * plugins/vuetify.js
- *
- * Framework documentation: https://vuetifyjs.com`
- */
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
-// Styles
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 
@@ -16,4 +11,7 @@ export default createVuetify({
   theme: {
     defaultTheme: 'dark',
   },
+  components: {
+    VDateInput
+  }
 })

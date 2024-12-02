@@ -65,11 +65,21 @@ class EventsApi {
 
 
   async getRegistrations() {
-    return api.get("/registrations");
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("participants") || '[]') };
+    } else {
+      return api.get("/registrations");
+    }
   }
 
   async getRegistration(registrationId) {
-    return api.get(`/registrations/${registrationId}`);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("participants") || '[]').find(participant => participant.id === registrationId) || {} };
+    } else {
+      return api.get(`/registrations/${registrationId}`);
+    }
   }
 
   async getRegistrationsByUserId(userId) {
@@ -77,19 +87,37 @@ class EventsApi {
   }
 
   async getRegistrationsByEventId(eventId) {
-    return api.get(`/registrations/event/${eventId}`);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      return { data: JSON.parse(localStorage.getItem("participants") || '[]').filter(participant => participant.event_id === eventId) || [] };
+    } else {
+      return api.get(`/registrations/event/${eventId}`);
+    }
   }
 
   async createRegistration(registration) {
-    return api.post("/registrations", registration);
+    const appStore = useAppStore()
+    if (appStore.isOffline) {
+      const participants = JSON.parse(localStorage.getItem("participants") || "[]");
+
+      registration.id = participants[participants.length - 1]?.id + 1
+      registration.offline = true
+
+      participants.push(registration);
+      localStorage.setItem("participants", JSON.stringify(participants));
+
+      return { data: registration };
+    } else {
+      return api.post("/registrations", registration);
+    }
   }
 
   async deleteRegistration(registrationId) {
     return api.delete(`/registrations/${registrationId}`);
   }
 
-  async registerPresence(registrationId) {
-    return api.put(`/checkin/${registrationId}`);
+  async registerPresence(registrationId, user_id) {
+    return api.put(`/checkin/${registrationId}`, { user_id });
   }
 
   async cancelRegistration(registrationId) {

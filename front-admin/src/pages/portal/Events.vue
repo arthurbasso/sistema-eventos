@@ -53,7 +53,9 @@ export default {
       if (!value) {
         this.fetchEvents()
       }
-    }
+    },
+
+
   },
 
   async created() {
@@ -143,6 +145,7 @@ export default {
 <template>
   <v-app>
     <v-layout>
+      <app-drawer />
       <v-main>
         <v-container>
           <v-row v-if="isAdmin">
@@ -162,10 +165,50 @@ export default {
                 class="rounded"
                 :headers="headers"
                 :items="events"
-                item-key="name"
+                item-key="id"
                 @click:row="openEventDetails"
               >
                 <template #item.actions="{ item }">
+                  <v-tooltip
+                    v-if="isAdmin"
+                    text="Editar"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-if="!isOffline"
+                        v-bind="props"
+                        class="mr-2"
+                        color="primary"
+                        icon="mdi-pencil"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="openEditEvent(item)"
+                      />
+                    </template>
+                  </v-tooltip>
+
+                  <v-tooltip
+                    v-if="isAdmin"
+                    text="Deletar"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-if="!isOffline || item.offline"
+                        v-bind="props"
+                        color="red"
+                        icon="mdi-delete"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="openDeleteEvent(item)"
+                      />
+                    </template>
+                  </v-tooltip>
+
+
                   <v-tooltip
                     v-if="!isAdmin"
                     text="Inscrever-se"
@@ -183,7 +226,7 @@ export default {
                         variant="tonal"
                         size="x-small"
                         rounded
-                        @click="$router.push('/login')"
+                        @click="openSubscribeEvent(item)"
                       />
                     </template>
                   </v-tooltip>

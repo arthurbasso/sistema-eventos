@@ -74,6 +74,7 @@ export default {
   <v-app>
     <v-layout>
       <app-drawer />
+
       <v-main>
         <v-container>
           <v-row>
@@ -96,26 +97,54 @@ export default {
                 item-key="id"
                 return-object
               >
+                <template #item.name="{ item }">
+                  {{ item.name }}
+                  <v-chip
+                    v-if="item.offline"
+                    class="rounded ms-2"
+                    size="x-small"
+                  >
+                    Offline
+                  </v-chip>
+                </template>
+
                 <template #item.actions="{ item }">
-                  <v-btn
-                    v-if="!isOffline"
-                    class="mr-2"
-                    color="primary"
-                    icon="mdi-pencil"
-                    variant="tonal"
-                    size="x-small"
-                    rounded
-                    @click="openEditUser(item)"
-                  />
-                  <v-btn
-                    v-if="!isOffline || item.offline"
-                    color="red"
-                    icon="mdi-delete"
-                    variant="tonal"
-                    size="x-small"
-                    rounded
-                    @click="openDeleteUser(item)"
-                  />
+                  <v-tooltip
+                    text="Editar"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-if="!isOffline"
+                        v-bind="props"
+                        class="mr-2"
+                        color="primary"
+                        icon="mdi-pencil"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="openEditUser(item)"
+                      />
+                    </template>
+                  </v-tooltip>
+
+                  <v-tooltip
+                    text="Deletar"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-if="!isOffline || item.offline"
+                        v-bind="props"
+                        color="red"
+                        icon="mdi-delete"
+                        variant="tonal"
+                        size="x-small"
+                        rounded
+                        @click="openDeleteUser(item)"
+                      />
+                    </template>
+                  </v-tooltip>
                 </template>
               </v-data-table-virtual>
             </v-col>

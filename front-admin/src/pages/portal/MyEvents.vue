@@ -4,29 +4,28 @@ import eventsApi from '@/api/events.api';
 
 import { useAppStore } from '@/stores/app.store';
 import { useUserStore } from '@/stores/user.store';
+import dayjs from 'dayjs'
 import { mapState } from 'pinia';
 
 export default {
-  name: 'Events',
+  name: 'MyEvents',
 
   data: () => ({
+    dayjs,
     loading: false,
-    loadingMyEvents: false,
     dialogEditEvent: false,
     dialogDeleteEvent: false,
     dialogSubscribeEvent: false,
-    dialogEventDetails: false,
     events: [],
     eventEdit: 0,
     eventDelete: {},
     eventSubscribe: {},
-    eventDetails: {},
     headers: [
       { title: 'ID', value: 'id' },
       { title: 'Nome', value: 'name' },
       { title: 'Descrição', value: 'description' },
       { title: 'Data', value: 'date' },
-      { title: 'Participantes', value: 'participants' },
+      { title: 'Status', value: 'status' },
       { title: 'Ações', value: 'actions', sortable: false, align: 'end' },
     ],
   }),
@@ -47,40 +46,23 @@ export default {
       if (!value) {
         this.fetchEvents()
       }
-    },
-
-    dialogSubscribeEvent(value) {
-      if (!value) {
-        this.fetchEvents()
-      }
     }
   },
 
   async created() {
-    await this.fetchEvents()
+    await this.fetchMyEvents()
   },
 
   methods: {
-    async fetchEvents() {
+    async fetchMyEvents() {
       try {
         this.loading = true
-        this.loadingMyEvents = true
-        let events = await eventsApi.getEvents()
+        let events = await eventsApi.getRegistrationsByUserId(this.getUserId)
         this.events = events.data
-        this.loading = false
-
-        let myEvents = await eventsApi.getRegistrationsByUserId(this.getUserId)
-        let myEventIds = myEvents.data.map(event => event.id);
-
-        this.events = this.events.map(event => ({
-          ...event,
-          subscribed: myEventIds.includes(event.id)
-        }))
       } catch (error) {
         console.error(error)
       } finally {
         this.loading = false
-        this.loadingMyEvents = false
       }
     },
 
@@ -97,11 +79,6 @@ export default {
     openSubscribeEvent(event) {
       this.eventSubscribe = event
       this.dialogSubscribeEvent = true
-    },
-
-    openEventDetails(event, row) {
-      this.eventDetails = row.item
-      this.dialogEventDetails = true
     },
 
     async inscrever(event) {
@@ -143,6 +120,7 @@ export default {
 <template>
   <v-app>
     <v-layout>
+      <app-drawer />
       <v-main>
         <v-container>
           <v-row v-if="isAdmin">
@@ -163,27 +141,49 @@ export default {
                 :headers="headers"
                 :items="events"
                 item-key="name"
-                @click:row="openEventDetails"
               >
+                <template #item.date="{ item }">
+                  {{ dayjs(item.date).format('DD/MM/YYYY HH:mm:ss') ?? 'Data não disponível' }}
+                </template>
+
+                <template #item.status="{ item }">
+                  <v-chip
+                    v-if="item.status === 'registered'"
+                    class="rounded"
+                    size="small"
+                    text="Inscrito"
+                  />
+                  <v-chip
+                    v-if="item.status === 'checked-in'"
+                    color="primary"
+                    class="rounded"
+                    size="small"
+                    text="Participou"
+                  />
+                  <v-chip
+                    v-if="item.status === 'canceled'"
+                    color="red"
+                    class="rounded"
+                    size="small"
+                    text="Não participou"
+                  />
+                </template>
+
                 <template #item.actions="{ item }">
                   <v-tooltip
-                    v-if="!isAdmin"
-                    text="Inscrever-se"
+                    text="Gerar certificado"
                     location="top"
                   >
                     <template #activator="{ props }">
                       <v-btn
-                        v-if="!isOffline"
-                        :disabled="item.subscribed"
-                        :loading="loadingMyEvents"
                         v-bind="props"
                         class="mr-2"
                         color="primary"
-                        icon="mdi-location-enter"
+                        icon="mdi-file-pdf-box"
                         variant="tonal"
                         size="x-small"
                         rounded
-                        @click="$router.push('/login')"
+                        @click="downloadCertificate"
                       />
                     </template>
                   </v-tooltip>
@@ -209,10 +209,5 @@ export default {
   <subscribe-event
     v-model="dialogSubscribeEvent"
     :event="eventSubscribe"
-  />
-
-  <event-details
-    v-model="dialogEventDetails"
-    :event="eventDetails"
   />
 </template>

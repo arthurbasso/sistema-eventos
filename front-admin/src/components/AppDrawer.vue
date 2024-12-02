@@ -1,5 +1,6 @@
 <script>
 import { useAppStore } from '@/stores/app.store'
+import { useUserStore } from '@/stores/user.store';
 import { mapState, mapActions } from 'pinia';
 
 
@@ -12,13 +13,15 @@ export default {
 
   computed: {
     ...mapState(useAppStore, ['isOffline']),
+    ...mapState(useUserStore, ['isAdmin']),
   },
 
   methods: {
     ...mapActions(useAppStore, ['setOfflineMode']),
+    ...mapActions(useUserStore, ['doLogout']),
 
     logout() {
-      localStorage.removeItem('token')
+      this.doLogout()
       this.$router.push('/login')
     },
 
@@ -46,23 +49,35 @@ export default {
       <v-list-item
         prepend-icon="mdi-seat"
         title="Eventos"
-        to="/events"
+        to="/portal/events"
       />
       <v-list-item
         prepend-icon="mdi-seat"
-        title="Eventos"
-        to="/userEvents"
+        title="Meus Eventos"
+        to="/portal/myevents"
       />
-      <v-list-item
-        prepend-icon="mdi-account-multiple"
-        title="Usuários"
-        to="/users"
-      />
+
       <v-list-item
         prepend-icon="mdi-file-certificate"
         title="Certificados"
-        to="/certificates"
+        to="/portal/certificates"
       />
+
+      <div v-if="isAdmin">
+        <v-divider />
+
+        <p
+          class="text-overline"
+        >
+          admin
+        </p>
+
+        <v-list-item
+          prepend-icon="mdi-account-multiple"
+          title="Usuários"
+          to="/portal/users"
+        />
+      </div>
     </v-list>
     <template #append>
       <v-list
@@ -70,6 +85,7 @@ export default {
         nav
       >
         <v-list-item
+          v-if="isAdmin"
           prepend-icon="mdi-connection"
           title="Modo offline"
           :base-color="isOffline ? 'primary' : ''"
