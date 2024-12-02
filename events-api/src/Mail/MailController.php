@@ -16,7 +16,7 @@ class MailController
         $user = json_decode($response->getBody(), true);
 
         $emailData = [
-            'to' => "arthurbassok123@gmail.com",
+            'to' => $user['email'],
             'subject' => $title,
             'text' => $body
         ];

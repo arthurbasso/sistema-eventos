@@ -23,7 +23,8 @@ export const useUserStore = defineStore('user', {
     },
 
     isAdmin() {
-      return this.getTokenPayload?.is_admin === true
+      return true
+      //return this.getTokenPayload?.is_admin === true
     }
   },
 

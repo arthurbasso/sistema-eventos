@@ -5,7 +5,7 @@ import type { Request, Response, NextFunction } from "express";
 export async function isLogged(req: Request, res: Response, next: NextFunction) {
 
     let api = axios.create({
-        baseURL: "http://users-api:3001",
+        baseURL: "http://localhost:3001",
     })
 
     api.defaults.headers.common["Authorization"] = req.headers?.authorization
