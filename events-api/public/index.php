@@ -24,6 +24,14 @@ $container->set(EventController::class, function (ContainerInterface $container)
 
 $app = AppFactory::create();
 
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type');
+});
+
+
 $app->get('/events', [EventController::class, 'getAll']);
 $app->get('/events/{id}', [EventController::class, 'getById']);
 $app->post('/events', [EventController::class, 'create']);

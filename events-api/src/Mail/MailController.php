@@ -12,16 +12,16 @@ class MailController
     {
         $client = new Client();
 
-        $response = $client->request('GET', "http://users-api:3001/users/{$userId}");
+        $response = $client->request('GET', "http://localhost:3001/users/{$userId}");
         $user = json_decode($response->getBody(), true);
 
         $emailData = [
-            'to' => $user['email'],
+            'to' => "arthurbassok123@gmail.com",
             'subject' => $title,
             'text' => $body
         ];
 
-        $client->request('POST', 'http://emails-api:3004/emails', [
+        $client->request('POST', 'http://localhost:3004/emails', [
             'json' => $emailData
         ]);
     }

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function sendEmail(email: string, subject: string, body: string) {
     try {
-        const response = await axios.post('http://emails-api:3004/emails', {
+        const response = await axios.post('http://localhost:3004/emails', {
             to: email,
             subject: subject,
             text: body
