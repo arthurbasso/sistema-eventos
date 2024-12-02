@@ -1,4 +1,4 @@
-# register-api
+# certificates-api
 
 To install dependencies:
 

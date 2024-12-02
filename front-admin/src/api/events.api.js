@@ -29,6 +29,39 @@ class EventsApi {
     return api.delete(`/events/${eventId}`);
   }
 
+
+  async getRegistrations() {
+    return api.get("/registrations");
+  }
+
+  async getRegistration(registrationId) {
+    return api.get(`/registrations/${registrationId}`);
+  }
+
+  async getRegistrationsByUserId(userId) {
+    return api.get(`/registrations/user/${userId}`);
+  }
+
+  async getRegistrationsByEventId(eventId) {
+    return api.get(`/registrations/event/${eventId}`);
+  }
+
+  async createRegistration(registration) {
+    return api.post("/registrations", registration);
+  }
+
+  async deleteRegistration(registrationId) {
+    return api.delete(`/registrations/${registrationId}`);
+  }
+
+  async registerPresence(registrationId) {
+    return api.put(`/checkin/${registrationId}`);
+  }
+
+  async cancelRegistration(registrationId) {
+    return api.put(`/cancel/${registrationId}`);
+  }
+
 }
 
 export default new EventsApi();

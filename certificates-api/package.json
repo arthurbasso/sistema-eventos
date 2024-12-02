@@ -1,20 +1,19 @@
 {
-  "name": "register-api",
+  "name": "certificates-api",
   "module": "index.ts",
   "type": "module",
-  "scripts": {
-    "dev": "bun --env-file=../.env --watch index.ts"
-  },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/express": "^5.0.0",
-    "@types/morgan": "^1.9.9"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "express": "^4.21.1",
     "morgan": "^1.10.0"
   }
